@@ -4,4 +4,4 @@ app = Flask(__name__)
 
 @app.route("/")
 def root():
-    return "Hello from Space! 🚀"
+    return "Hello from World! 🚀"
