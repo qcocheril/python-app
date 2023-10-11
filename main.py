@@ -2,25 +2,33 @@ from flask import Flask, request
 import logging
 import requests
 
+
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
-prefix_google = """
- <!-- Google tag (gtag.js) -->
-<script async
-src="https://www.googletagmanager.com/gtag/js?id=G-GV4KJPM75M"></script>
-<script>
- window.dataLayer = window.dataLayer || [];
- function gtag(){dataLayer.push(arguments);}
- gtag('js', new Date());
- gtag('config', 'G-GV4KJPM75M');
-</script>
- """
 
-@app.route("/")
+
+@app.route("/", methods=["GET","POST"])
 def hello_world():
-    return prefix_google + "Hello World"
+    prefix_google = """
+    <!-- Google tag (gtag.js) -->
+    <script async
+    src="https://www.googletagmanager.com/gtag/js?id=G-GV4KJPM75M"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GV4KJPM75M');
+    </script>
+    """
+
+    button_input = """
+    <form method = "GET" action = "/logger">
+	<input type="submit"  value="Go to log">
+    </form>
+    """
+    return prefix_google + "Hello World" + button_input
 
 @app.route("/logger", methods=['GET', 'POST'])
 def log():
@@ -57,15 +65,31 @@ def log():
     """
 
     # Boutton pour faire une google request 
-    button_input = """
+    button_input1 = """
     <form method = "POST" action = "/google_request">
 	<input type="submit"  value="Google request">
     </form>
     """
 
-    return log_msg + browser_log + textbox_input + button_input
+    # Boutton pour accéder à GAnalytics
+    button_input2 = """
+    <form method = "POST" action = "/GAnalytics">
+	<input type="submit"  value="Acces Google Analytics">
+    </form>
+    """
 
-@app.route("/google_request", methods = ["POST"])
+    return log_msg + browser_log + textbox_input + button_input1 + button_input2
+
+@app.route("/google_request", methods = ["GET","POST"])
 def google_request():
-    req = requests.get("https://www.google.com/")
-    return f"Response from google : {req.text}"
+    req = requests.get("https://www.google.fr/")
+
+    cookies_text = "\n\nCookies:\n"
+    cookies = req.cookies.get_dict()
+    
+    return f"{req.text} {cookies_text} {str(cookies)}"
+
+@app.route("/GAnalytics", methods = ["GET","POST"])
+def GAnalytics():
+    req2 = requests.get("https://analytics.google.com/analytics/web/#/p407487549/reports/intelligenthome?params=_u..nav%3Dmaui")
+    return f"{req2.text}"
